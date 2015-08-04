@@ -1,5 +1,13 @@
 *.zip
 
+# Android
+bin/
+obj/
+gen/
+assets/
+cpp/proj.android/libs/
+local.properties
+
 # Xcode
 .DS_Store
 build/
