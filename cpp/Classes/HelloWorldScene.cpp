@@ -1,7 +1,6 @@
 #include "HelloWorldScene.h"
-#if COCOS2D_VERSION >= 196608
 #include "ui/CocosGUI.h"
-#endif
+#include "cocostudio/CocoStudio.h"
 
 USING_NS_CC;
 using namespace sdkbox;
@@ -32,7 +31,8 @@ bool HelloWorld::init()
     {
         return false;
     }
-    int winWidth = CCDirector::getInstance()->getWinSize().width;
+    
+    FileUtils::getInstance()->addSearchPath("res");
     
     IAP::setDebug(true);
     IAP::setListener(this);
@@ -42,31 +42,22 @@ bool HelloWorld::init()
     
     _coinCount = 0;
     
-    _txtCoin = Label::create("0", "fonts/Marker Felt.ttf", 32);
-    _txtCoin->setAnchorPoint(cocos2d::Vec2(0, 0));
-    _txtCoin->setPosition(cocos2d::Vec2(800, 500));
-    addChild(_txtCoin);
+    auto rootNode = CSLoader::createNode("MainScene.csb");
     
-    CCMenuItemFont *item = CCMenuItemFont::create("Load", this, menu_selector(HelloWorld::onRequestIAP));
-    item->setPosition(0, 0);
-    CCMenuItemFont *item2 = CCMenuItemFont::create("Restore", this, menu_selector(HelloWorld::onRestoreIAP));
-    item->setPosition(0, 100);
+    addChild(rootNode);
     
-    CCMenu *menu = CCMenu::create(item, item2, NULL);
-    menu->setAnchorPoint(cocos2d::Vec2(0, 0));
-    menu->setPosition(cocos2d::Vec2(200, 400));
-    addChild(menu);
+    _txtCoin = rootNode->getChildByName<Label*>("txtCoin");
     
-    _iapMenu = CCMenu::create();
-    _iapMenu->setPosition(winWidth/2, 200);
-    addChild(_iapMenu);
+    auto btnLoad = rootNode->getChildByName<ui::Button*>("btnLoad");
+    btnLoad->addClickEventListener(CC_CALLBACK_1(HelloWorld::onRequestIAP, this));
     
-    //Close menu
-    CCMenuItemFont* close_menu_item = CCMenuItemFont::create("Close", this, menu_selector(HelloWorld::menuCloseCallback));
-    CCMenu *close_menu = CCMenu::create(close_menu_item, NULL);
-    close_menu->setAnchorPoint(cocos2d::Point(0, 0));
-    close_menu->setPosition(cocos2d::Point(800, 100));
-    addChild(close_menu);
+    auto btnRestore = rootNode->getChildByName<ui::Button*>("btnRestore");
+    btnRestore->addClickEventListener(CC_CALLBACK_1(HelloWorld::onRestoreIAP, this));
+    
+    auto btnClose = rootNode->getChildByName<ui::Button*>("btnClose");
+    btnClose->addClickEventListener(CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
+    
+    _iapMenu = rootNode->getChildByName<ui::Widget*>("menuIAP");
     
     Product test;
     test.name = "remove_ads";
@@ -101,7 +92,7 @@ void HelloWorld::onIAP(cocos2d::Ref *sender)
     IAP::purchase(p->name);
 }
 
-void HelloWorld::menuCloseCallback(Ref* pSender)
+void HelloWorld::menuCloseCallback(Ref* sender)
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
     MessageBox("You pressed the close button. Windows Store Apps do not implement a close button.","Alert");
@@ -171,16 +162,12 @@ void HelloWorld::updateIAP(const std::vector<sdkbox::Product>& products)
         CCLOG("IAP: Price: %s", _products[i].price.c_str());
         CCLOG("IAP: Price Value: %f", _products[i].priceValue);
         
-#if COCOS2D_VERSION >= 196608
         auto btn = ui::Button::create("button.png");
         //        btn->setTitleText(_products[i].name);
         btn->addClickEventListener(CC_CALLBACK_1(HelloWorld::onIAP, this));
-#else
-        auto btn = CCMenuItemFont::create(_products[i].name.c_str(), CC_CALLBACK_1(HelloWorld::onIAP, this) );
-#endif
         btn->setColor(Color3B::WHITE);
         btn->setUserData(&_products[i]);
-        btn->setPosition(CCPoint(posX, posY));
+        btn->setPosition(Vec2(posX, posY));
         _iapMenu->addChild(btn);
         posY += 50;
     }

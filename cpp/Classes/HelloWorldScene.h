@@ -14,7 +14,7 @@ public:
     virtual bool init();
     
     // a selector callback
-    void menuCloseCallback(cocos2d::Ref* pSender);
+    void menuCloseCallback(cocos2d::Ref* sender);
     void onShowAds(cocos2d::Ref* sender);
     void onRequestIAP(cocos2d::Ref* sender);
     void onRestoreIAP(cocos2d::Ref* sender);
@@ -42,7 +42,7 @@ private:
     
     void onRestoreComplete(bool ok, const std::string &msg);
     
-    cocos2d::CCMenu* _iapMenu;
+    cocos2d::ui::Widget* _iapMenu;
     std::vector<sdkbox::Product> _products;
     cocos2d::Label* _txtCoin;
     int _coinCount;
