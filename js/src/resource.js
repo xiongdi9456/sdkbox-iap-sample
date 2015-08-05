@@ -1,4 +1,5 @@
 var res = {
+  button_png : "res/button.png",
   MainScene_json : "res/MainScene.json",
     HelloWorld_png : "res/HelloWorld.png",
     CloseNormal_png : "res/CloseNormal.png",
