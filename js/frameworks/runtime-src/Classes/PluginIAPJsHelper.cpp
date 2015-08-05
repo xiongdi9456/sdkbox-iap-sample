@@ -103,12 +103,19 @@ public:
         return obj;
     }
     
-    void start()
+    static JsIAPCallbackObj *create(const std::string &eventName, JSObject *handler, const sdkbox::Product& product)
     {
-        CCDirector::sharedDirector()->getScheduler()->scheduleSelector(schedule_selector(JsIAPCallbackObj::callback), this, 0.1, false);
+        JsIAPCallbackObj *obj = new JsIAPCallbackObj(eventName, handler, product);
+        obj->autorelease();
+        return obj;
     }
     
-    void callback(float dt)
+    void start()
+    {
+        Director::getInstance()->getScheduler()->performFunctionInCocosThread(CC_CALLBACK_0(JsIAPCallbackObj::callback, this));
+    }
+    
+    void callback()
     {
         if (!s_cx)
         {
@@ -131,7 +138,15 @@ public:
 #endif
         
         jsval dataVal[1];
-        jsval value = std_vector_product_to_jsval(cx, m_products);
+        jsval value;
+        if (_eventName == "onProductRequestSuccess")
+        {
+            value = std_vector_product_to_jsval(cx, m_products);
+        }
+        else if(_eventName == "onCanceled")
+        {
+            value = OBJECT_TO_JSVAL(product_to_obj(s_cx, m_product));
+        }
         dataVal[0] = value;
         
         if (JS_HasProperty(cx, obj, func_name, &hasAction) && hasAction) {
@@ -161,8 +176,17 @@ private:
         m_products = products;
         retain();
     }
+
+    JsIAPCallbackObj(const std::string &eventName, JSObject *handler, const sdkbox::Product& product)
+    : _eventName(eventName)
+    , m_jsHandler(handler)
+    {
+        m_product = product;
+        retain();
+    }
     
     std::vector<sdkbox::Product> m_products;
+    sdkbox::Product m_product;
     JSObject* m_jsHandler;
     std::string _eventName;
 }; // JsIAPCallbackObj
@@ -271,44 +295,7 @@ public:
 
     void onCanceled(const sdkbox::Product& info)
     {
-        if (!s_cx)
-        {
-            return;
-        }
-        JSContext* cx = s_cx;
-        const char* func_name = "onCanceled";
-
-        JS::RootedObject obj(cx, _JSDelegate);
-        JSAutoCompartment ac(cx, obj);
-
-#if MOZJS_MAJOR_VERSION >= 31
-        bool hasAction;
-        JS::RootedValue retval(cx);
-        JS::RootedValue func_handle(cx);
-#else
-        JSBool hasAction;
-        jsval retval;
-        jsval func_handle;
-#endif
-        jsval dataVal[1];
-        jsval value = OBJECT_TO_JSVAL(product_to_obj(s_cx, info));
-
-        dataVal[0] = value;
-
-        if (JS_HasProperty(cx, obj, func_name, &hasAction) && hasAction) {
-            if(!JS_GetProperty(cx, obj, func_name, &func_handle)) {
-                return;
-            }
-            if(func_handle == JSVAL_VOID) {
-                return;
-            }
-
-#if MOZJS_MAJOR_VERSION >= 31
-            JS_CallFunctionName(cx, obj, func_name, JS::HandleValueArray::fromMarkedLocation(sizeof(dataVal)/sizeof(*dataVal), dataVal), &retval);
-#else
-            JS_CallFunctionName(cx, obj, func_name, sizeof(dataVal)/sizeof(*dataVal), dataVal, &retval);
-#endif
-        }
+        JsIAPCallbackObj::create("onCanceled", _JSDelegate, info)->start();
     }
 
     void onRestored(const sdkbox::Product& info)
