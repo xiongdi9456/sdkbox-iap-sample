@@ -1,0 +1,8 @@
+//
+// Prefix header for all source files of the 'js' target in the 'js' project
+//
+
+#ifdef __OBJC__
+	#import <Foundation/Foundation.h>
+	#import <UIKit/UIKit.h>
+#endif
