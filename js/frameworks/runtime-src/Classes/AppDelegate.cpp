@@ -39,6 +39,9 @@
 #include "platform/ios/JavaScriptObjCBridge.h"
 #endif
 
+#include "PluginIAPJS.hpp"
+#include "PluginIAPJSHelper.hpp"
+
 USING_NS_CC;
 using namespace CocosDenshion;
 
@@ -118,6 +121,9 @@ bool AppDelegate::applicationDidFinishLaunching()
     
     // 3d extension can be commented out to reduce the package
     sc->addRegisterCallback(register_all_cocos2dx_3d_extension);
+    
+    sc->addRegisterCallback(register_all_PluginIAPJS);
+    sc->addRegisterCallback(register_all_PluginIAPJS_helper);
     
 #if CC_USE_3D_PHYSICS && CC_ENABLE_BULLET_INTEGRATION
     // Physics 3d can be commented out to reduce the package

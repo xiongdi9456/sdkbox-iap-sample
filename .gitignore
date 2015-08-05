@@ -6,6 +6,7 @@ obj/
 gen/
 assets/
 cpp/proj.android/libs/
+js/frameworks/runtime-src/proj.android/libs/
 local.properties
 
 # Xcode
