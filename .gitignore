@@ -1,6 +1,7 @@
 *.zip
 
 # Android
+*.apk
 bin/
 obj/
 gen/
